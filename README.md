@@ -1,4 +1,4 @@
-## Timer_v2 application release code
+# XTimer application release code
 ## How to test:
 run main.py directly
 
