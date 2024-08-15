@@ -1,5 +1,6 @@
 import os
 import random
+import json
 from utils.fpath import *
 
 
@@ -9,6 +10,17 @@ def checkfile(filename):
         # 创建文件
         with open(filename, 'w') as file:
             pass
+
+
+def jsonload(filepath, value):
+    """检查json读取情况"""
+    checkfile(filepath)
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+    except json.JSONDecodeError:
+        data = value
+    return data
 
 
 def lyrics():

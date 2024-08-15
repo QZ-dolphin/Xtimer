@@ -10,13 +10,16 @@ Data_Path = os.path.join(Res_Path, "data")
 
 Version_Path = os.path.join(Data_Path, "version.json")
 Lyr_Path = os.path.join(Data_Path, "lyr.txt")
+Icon_Path = os.path.join(Pic_Path, "icons")
+File_Path = os.path.join(Data_Path, "data.json")
+
+Log_Path = os.path.join(Data_Path, "logs")
 
 
-file_path = os.path.join(Res_Path, "data.csv")
 pro_cat_path = os.path.join(Res_Path, "cat.json")
-File_Path = os.path.join(Res_Path, "data.csv")
+
 RP_Path = os.path.join(Res_Path, "record.png")
 pic_path = os.path.join(BASE_DIR, "pic")
-Log_Path = os.path.join(Res_Path, "logs")
+
 
 

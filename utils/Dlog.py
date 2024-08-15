@@ -1,5 +1,10 @@
 import wx
-
+import os
+from utils.fpath import *
+from utils.cus_button import button_icon
+import utils.datafun as C
+import utils.timefun as T
+import time
 
 class TransparentText(wx.StaticText):
     """透明背景字幕"""
@@ -37,3 +42,149 @@ class TransparentText(wx.StaticText):
     def on_size(self, event):
         self.Refresh()
         event.Skip()
+
+
+class StaDialog(wx.Dialog):
+    def __init__(self, parent, id):
+        super(StaDialog, self).__init__(parent, id, "开始（项目专用）", size=(350, 250))
+        self.app = wx.GetApp()
+        self.panel = self.app.frame
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        hbox1 = wx.BoxSizer(wx.HORIZONTAL)
+        st1 = wx.StaticText(self, label="所要进行的项目名称：")
+        hbox1.Add(st1, flag=wx.LEFT | wx.ALIGN_CENTER_VERTICAL, border=20)
+        self.proj = wx.TextCtrl(self)
+        hbox1.Add(self.proj, flag=wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, border=8)
+
+        vbox.Add((-1, 24))
+        vbox.Add(hbox1, flag=wx.EXPAND)
+        vbox.Add((-1, 24))
+        info1, info2 = C.show_projs()
+        st4 = wx.StaticText(self, label=info1)
+        st5 = wx.StaticText(self, label=info2)
+        st5.Wrap(280)
+        vbox.Add(st4, flag=wx.LEFT, border=20)
+        vbox.Add((-1, 4))
+        vbox.Add(st5, flag=wx.LEFT, border=28)
+        self.submit = wx.Button(self, label="开始计时")
+        vbox.Add((-1, 30))
+        vbox.Add(self.submit, flag=wx.ALIGN_CENTER)
+
+        self.SetSizer(vbox)
+
+        self.Bind(wx.EVT_BUTTON, self.OnClick, self.submit)
+        self.Bind(wx.EVT_CHAR_HOOK, self.OnChar)
+        # 图标
+        button_icon(self, "我的流程.png")
+        self.Center()
+
+    def OnClick(self, event):
+        proj = self.proj.GetValue()
+        info = C.change_info(proj)
+        dlg = TimDialog(None, 1, info, proj)
+        self.Close()
+        dlg.ShowModal()
+        dlg.Destroy()
+
+    def OnChar(self, event):
+        keycode = event.GetKeyCode()
+        if keycode == wx.WXK_RETURN or keycode == wx.WXK_NUMPAD_ENTER:
+            self.OnClick(event)
+        else:
+            event.Skip()
+
+
+class TimDialog(wx.Dialog):
+    def __init__(self, parent, id, info, proj):
+        super(TimDialog, self).__init__(parent, id, "计时开始", size=(350, 200))
+        _, self.begin_t = C.da_hour()
+        self.start_time = time.time()
+        self.proj = proj
+        self.app = wx.GetApp()
+        self.panel = self.app.frame
+
+        intro = wx.StaticText(self, label=info)
+        self.submit_btn = wx.Button(self, label="结束计时")
+        self.elapsed_time_label = wx.StaticText(self, label="", size=(300, -1), style=wx.ALIGN_CENTER)
+
+        self.timer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.update_elapsed_time, self.timer)
+        self.timer.Start(1000)  # 每1000毫秒（1秒）更新一次
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        vbox.Add((-1, 24))
+        vbox.Add(intro, flag=wx.LEFT, border=20)
+        vbox.Add((-1, 24))
+
+        vbox.Add(self.elapsed_time_label, proportion=1, flag=wx.ALIGN_CENTER)
+        vbox.Add((-1, 24))
+        vbox.Add(self.submit_btn, flag=wx.ALIGN_CENTER | wx.BOTTOM, border=20)
+
+        self.SetSizer(vbox)
+
+        self.Bind(wx.EVT_BUTTON, self.OnClick, self.submit_btn)
+        self.Bind(wx.EVT_CHAR_HOOK, self.OnChar)
+
+        # 图标
+        button_icon(self, "日程安排.png")
+        self.Center()
+        # self.setPosition()
+
+    def setPosition(self):
+        # 获取屏幕尺寸
+        screen_width, screen_height = wx.DisplaySize()
+        # 获取对话框尺寸
+        dialog_width, dialog_height = self.GetSize()
+
+        # 计算对话框在屏幕右上角的位置
+        x = screen_width - dialog_width
+        y = 0
+        # 设置对话框位置
+        self.SetPosition((x, y))
+
+    def update_elapsed_time(self, event):
+        current_time = time.time()
+        elapsed_time = current_time - self.start_time
+        formatted_time = T.time_s2(elapsed_time)
+        self.elapsed_time_label.SetLabel(f"计时中：{formatted_time}")
+
+    def OnClick(self, event):
+        self.timer.Stop()
+        self.end_time = time.time()  # 记录结束时间
+        C.setlog(self.proj, self.begin_t)
+        elapsed_time = self.end_time - self.start_time
+        s = "您此次花费的的时间为: " + T.time_s2(elapsed_time)
+        C.change_3(self.proj, elapsed_time)
+        dlg = ResDialog(None, 2, s)
+        self.Close()
+        dlg.ShowModal()
+        dlg.Destroy()
+
+    def OnChar(self, event):
+        keycode = event.GetKeyCode()
+        if keycode == wx.WXK_RETURN or keycode == wx.WXK_NUMPAD_ENTER:
+            self.OnClick(event)
+        else:
+            event.Skip()
+
+
+class ResDialog(wx.Dialog):
+    """生成时间记录显示"""
+    def __init__(self, parent, id, info):
+        super(ResDialog, self).__init__(parent, id, "时间记录", size=(350, 200))
+        self.app = wx.GetApp()
+        self.panel = self.app.frame
+
+        tx = wx.StaticText(self, label=info, size=(300, 20), style=wx.ALIGN_CENTER)
+        button_ok = wx.Button(self, wx.ID_OK)
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        vbox.Add((-1, 50))
+        vbox.Add(tx, proportion=1, flag=wx.ALIGN_CENTER)
+        vbox.Add(button_ok, flag=wx.ALIGN_CENTER | wx.BOTTOM, border=20)
+        self.SetSizer(vbox)
+
+        # 图标
+        button_icon(self, "生成报告.png")
+        self.Center()

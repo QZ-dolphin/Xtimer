@@ -30,6 +30,7 @@ class MainFrame(wx.Frame):
         self.setBar()  # 设置状态栏
         self.setupIcon()  # 设置软件Icon
         self.setButton()  # 设置软件按键
+        self.setMenu()  # 设置菜单
 
         self.Center()
 
@@ -42,7 +43,7 @@ class MainFrame(wx.Frame):
         """设置窗口背景图"""
         img = Image.open(path)
         imsize = size
-        img = img.resize(imsize, Image.ANTIALIAS)  # 指定目标尺寸并使用抗锯齿算法
+        img = img.resize(imsize, Image.LANCZOS)  # 指定目标尺寸并使用抗锯齿算法
         img = img.convert("RGB")  # 将图像转换为RGB模式，wx.Bitmap需要RGB图像
         # 创建 wx.StaticBitmap 控件，并将缩放后的图像转换为 wx.Bitmap
         width, height = img.size
@@ -116,8 +117,7 @@ class MainFrame(wx.Frame):
 
     def OnClick(self, event):
         if event.GetEventObject() == self.button_start:
-            pass
-            # self.start_()
+            self.start_()
         elif event.GetEventObject() == self.button_del:
             pass
             # self.del_()
@@ -125,6 +125,17 @@ class MainFrame(wx.Frame):
             pass
             # self.show_()
 
+    def hish(self, dlg):    # 窗口 隐藏->显示 代码重用
+        self.Hide()
+        dlg.ShowModal()
+        dlg.Destroy()
+        self.Show()
+
+    def start_(self):
+        dlg = D.StaDialog(None, -1)
+        self.hish(dlg)
+
+    ############################################################
     def OnCloseWindow(self, e):  # 窗口关闭确认
         dial = wx.MessageDialog(None, 'Are you sure to quit?', 'Question',
                                     wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
@@ -133,7 +144,43 @@ class MainFrame(wx.Frame):
             self.Destroy()
         else:
             e.Veto()    # 用于取消（否决）当前事件的处理,取消关闭事件
-        ##################################
+
+    def setMenu(self):
+        """设置菜单"""
+        menubar = wx.MenuBar()
+
+        fmenu = wx.Menu()  # 创建子菜单项 "File"
+        ab_menu = wx.MenuItem(fmenu, ID_ABOUT, "使用说明(&H)", "How to use this tool")
+        ab_menu.SetBitmap(wx.Bitmap(os.path.join(Icon_Path, "ab.png")))
+        up_menu = wx.MenuItem(fmenu, ID_UPDATE, "更新日志(&U)", "Details of Update")
+        up_menu.SetBitmap(wx.Bitmap(os.path.join(Icon_Path, "up.png")))
+        fmenu.Append(ab_menu)
+        fmenu.Append(up_menu)
+
+        menubar.Append(fmenu, "关于")  # 将 "MI" 添加到菜单栏
+
+        tmenu = wx.Menu()  # 创建子菜单项 "File"
+        ct_menu = wx.MenuItem(fmenu, ID_CAT, "类别标签(&C)", "Categories setting")
+        ct_menu.SetBitmap(wx.Bitmap(os.path.join(Icon_Path, "ab.png")))
+        tmenu.Append(ct_menu)
+
+        ad_menu = wx.MenuItem(fmenu, ID_ADD, "项目导入(&A)", "Add project and its time")
+        ad_menu.SetBitmap(wx.Bitmap(os.path.join(Icon_Path, "Targets.png")))
+        tmenu.Append(ad_menu)
+        # 查看记录功能
+        lk_menu = wx.MenuItem(fmenu, ID_LOOK, "查看当日记录(&L)", "Today's records")
+        lk_menu.SetBitmap(wx.Bitmap(os.path.join(Icon_Path, "饭团.png")))
+        tmenu.Append(lk_menu)
+        # 琐事记录功能
+        dy_menu = wx.MenuItem(fmenu, ID_DAY, "日常琐事(&D)", "Daily routine")
+        dy_menu.SetBitmap(wx.Bitmap(os.path.join(Icon_Path, "米饭.png")))
+        tmenu.Append(dy_menu)
+
+        menubar.Append(tmenu, "更多功能")
+
+        self.SetMenuBar(menubar)
+
+
 class App(wx.App):
     def __init__(self):
         super().__init__()

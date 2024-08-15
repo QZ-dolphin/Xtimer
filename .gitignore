@@ -9,6 +9,8 @@ __pycache__/
 # Distribution / packaging
 .Python
 utils/__pycache__/
+res/data/logs/*.txt
+res/data/data.json
 .idea/
 build/
 develop-eggs/

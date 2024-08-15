@@ -1,5 +1,12 @@
 import wx
+from utils.fpath import *
 
+
+def button_icon(self, pic):
+    """设置对话框Icon"""
+    img_path = os.path.join(Icon_Path, pic)
+    icon = wx.Icon(img_path, type=wx.BITMAP_TYPE_PNG)
+    self.SetIcon(icon)
 
 class DesButton(wx.BitmapButton):
     def __init__(self, place, image1, image2, size, pos):
