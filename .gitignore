@@ -10,6 +10,7 @@ __pycache__/
 .Python
 utils/__pycache__/
 res/data/logs/*.txt
+res/data/logs/*.json
 res/data/data.json
 .idea/
 build/
