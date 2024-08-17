@@ -46,7 +46,7 @@ class TransparentText(wx.StaticText):
 
 class StaDialog(wx.Dialog):
     def __init__(self, parent, id):
-        super(StaDialog, self).__init__(parent, id, "开始（项目专用）", size=(350, 250))
+        super().__init__(parent, id, "开始（项目专用）", size=(350, 250))
         self.app = wx.GetApp()
         self.panel = self.app.frame
 
@@ -76,11 +76,17 @@ class StaDialog(wx.Dialog):
         self.Bind(wx.EVT_BUTTON, self.OnClick, self.submit)
         self.Bind(wx.EVT_CHAR_HOOK, self.OnChar)
         # 图标
-        button_icon(self, "我的流程.png")
+        button_icon(self, "process.png")
         self.Center()
 
     def OnClick(self, event):
         proj = self.proj.GetValue()
+        if proj.strip() == "":
+            dial = ShowInfoV1('请输入项目', '注意')
+            dial.ShowModal()
+            dial.Destroy()
+            self.proj.Clear()
+            return
         info = C.change_info(proj)
         dlg = TimDialog(None, 1, info, proj)
         self.Close()
@@ -97,8 +103,8 @@ class StaDialog(wx.Dialog):
 
 class TimDialog(wx.Dialog):
     def __init__(self, parent, id, info, proj):
-        super(TimDialog, self).__init__(parent, id, "计时开始", size=(350, 200))
-        _, self.begin_t = C.da_hour()
+        super().__init__(parent, id, "计时开始", size=(350, 200))
+        _, self.begin_t = T.da_hour()
         self.start_time = time.time()
         self.proj = proj
         self.app = wx.GetApp()
@@ -152,10 +158,10 @@ class TimDialog(wx.Dialog):
     def OnClick(self, event):
         self.timer.Stop()
         self.end_time = time.time()  # 记录结束时间
-        C.setlog(self.proj, self.begin_t)
+        C.setlog(self.proj, self.begin_t)   # 载入当日记录log中
         elapsed_time = self.end_time - self.start_time
         s = "您此次花费的的时间为: " + T.time_s2(elapsed_time)
-        C.change_3(self.proj, elapsed_time)
+        C.change_2(self.proj, elapsed_time) # 载入所有记录中
         dlg = ResDialog(None, 2, s)
         self.Close()
         dlg.ShowModal()
@@ -188,3 +194,47 @@ class ResDialog(wx.Dialog):
         # 图标
         button_icon(self, "生成报告.png")
         self.Center()
+
+
+class ShowInfoV1(wx.Dialog):
+    """显示普通的提示信息，短文本"""
+    def __init__(self, info, title):
+        super().__init__(None, 12, title, size=(300, 200))
+        self.app = wx.GetApp()
+        self.panel = self.app.frame
+        self.Center()
+        button_icon(self, "show.png")
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        # tc1 = wx.TextCtrl(self, style=wx.TE_MULTILINE | wx.TE_READONLY | wx.VSCROLL)
+        # tc1.SetValue(info)
+
+        st1 = wx.StaticText(self, label=info, style=wx.ALIGN_CENTER)
+        vbox.Add((-1, 50))
+        vbox.Add(st1, proportion=1, flag=wx.EXPAND | wx.RIGHT | wx.LEFT, border=20)
+        vbox.Add((-1, 20))
+        buttonok = wx.Button(self, wx.ID_OK)
+        vbox.Add(buttonok, flag=wx.ALIGN_CENTER | wx.BOTTOM, border=15)
+
+        self.SetSizer(vbox)
+
+
+class ShowInfoV2(wx.Dialog):
+    """显示普通的提示信息，长文本"""
+    def __init__(self, info, title):
+        super().__init__(None, 13, title, size=(300, 200))
+        self.app = wx.GetApp()
+        self.panel = self.app.frame
+        self.Center()
+        button_icon(self, "show.png")
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        tc1 = wx.TextCtrl(self, style=wx.TE_MULTILINE | wx.TE_READONLY | wx.VSCROLL)
+        tc1.SetValue(info)
+        vbox.Add((-1, 10))
+        vbox.Add(tc1, proportion=1, flag=wx.EXPAND | wx.RIGHT | wx.LEFT, border=20)
+        vbox.Add((-1, 20))
+        buttonok = wx.Button(self, wx.ID_OK)
+        vbox.Add(buttonok, flag=wx.ALIGN_CENTER | wx.BOTTOM, border=15)
+
+        self.SetSizer(vbox)

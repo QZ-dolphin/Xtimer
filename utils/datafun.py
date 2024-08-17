@@ -28,16 +28,9 @@ def show_projs():
     return info1, info2
 
 
-def da_hour():
-    """返回时间"""
-    t = time.localtime(time.time())
-    data = time.strftime('%Y-%m-%d', t)
-    hour = time.strftime('%H:%M', t)
-    return data, hour
-
-
 def setlog(proj, begin_t):
-    data, end_t = da_hour()
+    """设置每日记录"""
+    data, end_t = T.da_hour()
 
     log_path = os.path.join(Log_Path, f"{data}.txt")
     info = f"{begin_t} - {end_t}\t{str(proj)}\n"
@@ -51,7 +44,7 @@ def setlog(proj, begin_t):
 
 
 def change_3(proj, edt):
-    """"""
+    """添加至总记录中"""
     projs = {}
     projs = FC.jsonload(File_Path, projs)
     if proj not in projs.keys():
@@ -59,6 +52,27 @@ def change_3(proj, edt):
     t = projs[proj] + edt
     projs[proj] = t
 
-    with open(File_Path, "w", encoding="utf-8") as f:
+    with open(File_Path, "w", encoding='utf-8') as f:
         json.dump(projs, f)
 
+
+def change_2(proj, edt):
+    """添加至所有记录中"""
+    monthFilePath = T.month_filepath()
+    weekFilePath = T.week_filepath()
+    change_1(monthFilePath, proj, edt)
+    change_1(weekFilePath, proj, edt)
+    change_1(File_Path, proj, edt)
+
+
+def change_1(filepath, proj, edt):
+    """添加记录"""
+    projs = {}
+    projs = FC.jsonload(filepath, projs)
+    if proj not in projs.keys():
+        projs[proj] = 0.0
+    t = projs[proj] + edt
+    projs[proj] = t
+
+    with open(filepath, "w", encoding='utf-8') as f:
+        json.dump(projs, f)
