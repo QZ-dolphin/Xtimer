@@ -8,6 +8,7 @@ __pycache__/
 # d
 # Distribution / packaging
 .Python
+*.spec
 utils/__pycache__/
 res/data/logs/*.txt
 res/data/logs/*.json
