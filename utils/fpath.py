@@ -14,11 +14,11 @@ Icon_Path = os.path.join(Pic_Path, "icons")
 File_Path = os.path.join(Data_Path, "data.json")
 
 Log_Path = os.path.join(Data_Path, "logs")
-
+RP_Path = os.path.join(Data_Path, "record.png")
 
 pro_cat_path = os.path.join(Res_Path, "cat.json")
 
-RP_Path = os.path.join(Res_Path, "record.png")
+
 pic_path = os.path.join(BASE_DIR, "pic")
 
 

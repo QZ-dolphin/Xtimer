@@ -6,6 +6,7 @@ from utils import version as V
 from utils import Dlog as D
 from utils import file_controls as FC
 from utils import cus_button as CB
+import utils.datafun as C
 from utils.fpath import *
 from utils.IDS import *
 
@@ -91,9 +92,9 @@ class MainFrame(wx.Frame):
         icon = wx.Icon(self.icon_path, type=wx.BITMAP_TYPE_PNG)
         self.SetIcon(icon)
 
-    ##########################
-    ## 设置软件主界面按键
-    ##########################
+    ########################################################################################################
+    ## 以下设置软件主界面按键
+
     def setButton(self):
         """设置软件按键"""
         size = (60, 30)
@@ -119,11 +120,9 @@ class MainFrame(wx.Frame):
         if event.GetEventObject() == self.button_start:
             self.start_()
         elif event.GetEventObject() == self.button_del:
-            pass
-            # self.del_()
+            self.del_()
         elif event.GetEventObject() == self.button_show:
-            pass
-            # self.show_()
+            self.show_()
 
     def hish(self, dlg):    # 窗口 隐藏->显示 代码重用
         self.Hide()
@@ -135,7 +134,16 @@ class MainFrame(wx.Frame):
         dlg = D.StaDialog(None, -1)
         self.hish(dlg)
 
-    ############################################################
+    def del_(self):
+        dlg = D.DelDialog()
+        self.hish(dlg)
+
+    def show_(self):
+        info = C.show_info(File_Path)
+        dlg = D.RecDialog2(info, "项目记录")
+        self.hish(dlg)
+    ######### 以上主界面功能按键代码
+    ##########################################################################################################
     def OnCloseWindow(self, e):  # 窗口关闭确认
         dial = wx.MessageDialog(None, 'Are you sure to quit?', 'Question',
                                     wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
@@ -195,6 +203,6 @@ class App(wx.App):
         return True
 
 
-FLAG = False
+FLAG = True
 app = App()
 app.MainLoop()

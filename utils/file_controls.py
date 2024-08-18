@@ -23,6 +23,23 @@ def jsonload(filepath, value):
     return data
 
 
+def re_projs_t(filepath):
+    """返回项目及时间字典"""
+    checkfile(filepath)
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+    except json.JSONDecodeError:
+        data = {}
+    return data
+
+
+def re_projs(filepath):
+    """返回项目列表"""
+    data = re_projs_t(filepath)
+    return list(data.keys())
+
+
 def lyrics():
     """设置主界面名言名句"""
     info = []

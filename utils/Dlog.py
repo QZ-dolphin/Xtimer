@@ -4,6 +4,7 @@ from utils.fpath import *
 from utils.cus_button import button_icon
 import utils.datafun as C
 import utils.timefun as T
+import utils.file_controls as FC
 import time
 
 class TransparentText(wx.StaticText):
@@ -45,6 +46,7 @@ class TransparentText(wx.StaticText):
 
 
 class StaDialog(wx.Dialog):
+    """开始项目界面"""
     def __init__(self, parent, id):
         super().__init__(parent, id, "开始（项目专用）", size=(350, 250))
         self.app = wx.GetApp()
@@ -60,13 +62,17 @@ class StaDialog(wx.Dialog):
         vbox.Add((-1, 24))
         vbox.Add(hbox1, flag=wx.EXPAND)
         vbox.Add((-1, 24))
-        info1, info2 = C.show_projs()
+        info1 = "选择已有项目："
+        _, info2 = C.show_projs()
         st4 = wx.StaticText(self, label=info1)
-        st5 = wx.StaticText(self, label=info2)
-        st5.Wrap(280)
+
+        self.prots = FC.re_projs(File_Path)
+        self.cb = wx.ComboBox(self, choices=self.prots, style=wx.CB_READONLY)
+        self.cb.Bind(wx.EVT_COMBOBOX, self.OnSelect)
+
         vbox.Add(st4, flag=wx.LEFT, border=20)
         vbox.Add((-1, 4))
-        vbox.Add(st5, flag=wx.LEFT, border=28)
+        vbox.Add(self.cb, flag=wx.LEFT, border=20)
         self.submit = wx.Button(self, label="开始计时")
         vbox.Add((-1, 30))
         vbox.Add(self.submit, flag=wx.ALIGN_CENTER)
@@ -100,8 +106,12 @@ class StaDialog(wx.Dialog):
         else:
             event.Skip()
 
+    def OnSelect(self, event):
+        self.proj.SetLabel(event.GetString())
+
 
 class TimDialog(wx.Dialog):
+    """时间记录界面"""
     def __init__(self, parent, id, info, proj):
         super().__init__(parent, id, "计时开始", size=(350, 200))
         _, self.begin_t = T.da_hour()
@@ -176,7 +186,7 @@ class TimDialog(wx.Dialog):
 
 
 class ResDialog(wx.Dialog):
-    """生成时间记录显示"""
+    """生成简要时间记录显示"""
     def __init__(self, parent, id, info):
         super(ResDialog, self).__init__(parent, id, "时间记录", size=(350, 200))
         self.app = wx.GetApp()
@@ -194,6 +204,243 @@ class ResDialog(wx.Dialog):
         # 图标
         button_icon(self, "生成报告.png")
         self.Center()
+
+
+class DelDialog(wx.Dialog):
+    """删除项目记录"""
+    def __init__(self):
+        super().__init__(None, 3, "删除记录", size=(350, 250))
+        self.app = wx.GetApp()
+        self.panel = self.app.frame
+
+        # 图标
+        button_icon(self, "历史数据.png")
+        self.Center()
+
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        hbox1 = wx.BoxSizer(wx.HORIZONTAL)
+        st1 = wx.StaticText(self, label="所要删除的项目名称：")
+        hbox1.Add(st1, flag=wx.LEFT | wx.ALIGN_CENTER_VERTICAL, border=20)
+
+        self.delproj = None
+        self.prots = FC.re_projs(File_Path)
+        self.cb = wx.ComboBox(self, choices=self.prots, style=wx.CB_READONLY)
+        self.cb.Bind(wx.EVT_COMBOBOX, self.OnSelect)
+
+        hbox1.Add(self.cb, flag=wx.RIGHT | wx.ALIGN_CENTER_VERTICAL, border=8)
+
+        vbox.Add((-1, 24))
+        vbox.Add(hbox1, flag=wx.EXPAND)
+        vbox.Add((-1, 24))
+        info1, info2 = C.show_projs()
+        st4 = wx.StaticText(self, label=info1)
+        st5 = wx.StaticText(self, label=info2)
+        st5.Wrap(280)
+        vbox.Add(st4, flag=wx.LEFT, border=20)
+        vbox.Add((-1, 4))
+        vbox.Add(st5, flag=wx.LEFT, border=28)
+        self.submit = wx.Button(self, label="提交")
+        vbox.Add((-1, 30))
+        vbox.Add(self.submit, flag=wx.ALIGN_CENTER)
+
+        self.SetSizer(vbox)
+
+        self.Bind(wx.EVT_BUTTON, self.OnClick, self.submit)
+        self.Bind(wx.EVT_CHAR_HOOK, self.OnChar)
+
+
+    def OnClick(self, event):
+        C.del_2(File_Path, self.delproj)
+        info = C.show_info(File_Path)
+        dlg = RecDialog(None, -1, info, "项目记录")
+        self.Close()
+        dlg.ShowModal()
+        dlg.Destroy()
+
+    def OnChar(self, event):
+        keycode = event.GetKeyCode()
+        if keycode == wx.WXK_RETURN or keycode == wx.WXK_NUMPAD_ENTER:
+            self.OnClick(event)
+        else:
+            event.Skip()
+
+    def OnSelect(self, event):
+        self.delproj = event.GetString()
+
+
+class RecDialog(wx.Dialog):
+    """显示当日记录对话框"""
+    def __init__(self, parent, id, info, name):
+        super(RecDialog, self).__init__(parent, id, name, size=(350, 500))
+        self.app = wx.GetApp()
+        self.panel = self.app.frame
+
+        # 图标
+        button_icon(self, "饭团.png")
+
+        self.Center()
+        sizer1 = wx.GridBagSizer(4, 4)
+        tc = wx.TextCtrl(self, style=wx.TE_READONLY | wx.TE_MULTILINE | wx.VSCROLL)
+        tc.SetValue(info)
+        sizer1.Add(tc, pos=(0, 0), span=(2, 3),
+                   flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=25)
+
+        sizer1.AddGrowableCol(1)
+        sizer1.AddGrowableRow(1)
+        buttonOk = wx.Button(self, wx.ID_OK)
+        box = wx.BoxSizer(wx.VERTICAL)
+        box.Add(sizer1, proportion=1, flag=wx.EXPAND | wx.TOP | wx.BOTTOM, border=15)
+        box.Add((-1, 10))
+        box.Add(buttonOk, flag=wx.ALIGN_CENTER | wx.BOTTOM, border=20)
+        self.SetSizer(box)
+
+
+class RecDialog2(wx.Dialog):
+    """显示项目记录界面"""
+    def __init__(self, info, name):
+        super().__init__(None, 2, name, size=(350, 500))
+        self.app = wx.GetApp()
+        self.panel = self.app.frame
+
+        # 图标
+        button_icon(self, "饭团.png")
+
+        self.Center()
+        sizer1 = wx.GridBagSizer(4, 4)
+        tc = wx.TextCtrl(self, style=wx.TE_READONLY | wx.TE_MULTILINE | wx.VSCROLL)
+        tc.SetValue(info)
+        sizer1.Add(tc, pos=(0, 0), span=(2, 3),
+                   flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=25)
+
+        sizer1.AddGrowableCol(1)
+        sizer1.AddGrowableRow(1)
+        buttonOk = wx.Button(self, wx.ID_OK)
+        buttonOk.Bind(wx.EVT_BUTTON, self.on_close)
+
+        buttonPic = wx.Button(self, label="PIC")  # 新增的 PIC 按钮
+        buttonPic.Bind(wx.EVT_BUTTON, self.on_pic_button)  # 绑定按钮事件处理函数
+        box = wx.BoxSizer(wx.VERTICAL)
+        box.Add(sizer1, proportion=1, flag=wx.EXPAND | wx.TOP | wx.BOTTOM, border=15)
+        box.Add((-1, 10))
+
+        # 创建一个水平的 BoxSizer 来包含确认按钮和 PIC 按钮
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        hbox.Add(buttonOk, flag=wx.ALIGN_CENTER | wx.RIGHT, border=10)
+        hbox.Add(buttonPic, flag=wx.ALIGN_CENTER)
+        box.Add(hbox, flag=wx.ALIGN_CENTER | wx.BOTTOM, border=20)
+
+        self.SetSizer(box)
+        self.pic_frame = None  # 用于存储图片窗口的引用
+        self.Bind(wx.EVT_CLOSE, self.on_close)
+
+    def on_pic_button(self, event):
+        if self.pic_frame is not None:
+            self.pic_frame.Close()
+            self.pic_frame = None  # 重置图片窗口引用
+        else:
+            # 否则，显示本地图片
+            img = wx.Image(RP_Path, wx.BITMAP_TYPE_ANY)
+            frame_size = (img.GetWidth()+20, img.GetHeight()+40)  # 调整窗口大小为图片大小加上一些边距
+            self.pic_frame = wx.Frame(None, title="项目时间图示", size=frame_size)
+            button_icon(self.pic_frame, "饭团.png")
+            panel = wx.Panel(self.pic_frame)
+            bmp = wx.Bitmap(img)
+            wx.StaticBitmap(panel, -1, bmp, (0, 0))
+
+            screen_size = wx.GetDisplaySize()
+            window_size = self.GetSize()
+            f_size = self.pic_frame.GetSize()
+            x = (screen_size.width - window_size.width - 2 * f_size.width) // 2
+            y = (screen_size.height - window_size.height) // 2
+
+            # 设置窗口位置
+            self.pic_frame.SetPosition((x, y))
+            self.pic_frame.Bind(wx.EVT_CLOSE, self.on_pic_frame_close)
+            self.pic_frame.Show()
+
+    def on_pic_frame_close(self, event):
+        self.pic_frame = None
+        event.Skip()  # 确保默认的关闭行为仍然发生
+
+    def on_close(self, event):
+        # 如果图片窗口打开，则关闭它
+        if self.pic_frame is not None:
+            self.pic_frame.Close()
+            self.pic_frame = None
+        event.Skip()  # 确保默认的关闭行为仍然发生
+
+
+class RecDialog_v1(wx.Dialog):
+    """统一格式显示项目记录界面"""
+    def __init__(self, info, name):
+        super().__init__(None, 2, "项目记录", size=(350, 500))
+        self.app = wx.GetApp()
+        self.panel = self.app.frame
+
+        # 图标
+        button_icon(self, "饭团.png")
+
+        self.Center()
+        sizer1 = wx.GridBagSizer(4, 4)
+
+        st1 = wx.StaticText(self, label=name, size=(300, 20), style=wx.ALIGN_CENTER)
+        sizer1.Add(st1, pos=(0, 0), span=(1, 3),
+                   flag=wx.ALIGN_CENTER_HORIZONTAL | wx.LEFT | wx.RIGHT, border=25)
+
+
+
+        tc = wx.TextCtrl(self, style=wx.TE_READONLY | wx.TE_MULTILINE | wx.VSCROLL)
+        tc.SetValue(info)
+        sizer1.Add(tc, pos=(1, 0), span=(2, 3),
+                   flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=25)
+
+        sizer1.AddGrowableCol(1)
+        sizer1.AddGrowableRow(1)
+        buttonOk = wx.Button(self, wx.ID_OK)
+        buttonPic = wx.Button(self, label="PIC")  # 新增的 PIC 按钮
+        buttonPic.Bind(wx.EVT_BUTTON, self.on_pic_button)  # 绑定按钮事件处理函数
+        box = wx.BoxSizer(wx.VERTICAL)
+        box.Add(sizer1, proportion=1, flag=wx.EXPAND | wx.TOP | wx.BOTTOM, border=15)
+        box.Add((-1, 10))
+
+        # 创建一个水平的 BoxSizer 来包含确认按钮和 PIC 按钮
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        hbox.Add(buttonOk, flag=wx.ALIGN_CENTER | wx.RIGHT, border=10)
+        hbox.Add(buttonPic, flag=wx.ALIGN_CENTER)
+        box.Add(hbox, flag=wx.ALIGN_CENTER | wx.BOTTOM, border=20)
+
+        self.SetSizer(box)
+        self.pic_frame = None  # 用于存储图片窗口的引用
+
+    def on_pic_button(self, event):
+        if self.pic_frame is not None:
+            self.pic_frame.Close()
+            self.pic_frame = None  # 重置图片窗口引用
+        else:
+            # 否则，显示本地图片
+            img = wx.Image(RP_Path, wx.BITMAP_TYPE_ANY)
+            frame_size = (img.GetWidth()+20, img.GetHeight()+40)  # 调整窗口大小为图片大小加上一些边距
+            self.pic_frame = wx.Frame(None, title="项目时间图示", size=frame_size)
+            button_icon(self.pic_frame, "饭团.png")
+            panel = wx.Panel(self.pic_frame)
+            bmp = wx.Bitmap(img)
+            wx.StaticBitmap(panel, -1, bmp, (0, 0))
+
+            screen_size = wx.GetDisplaySize()
+            window_size = self.GetSize()
+            f_size = self.pic_frame.GetSize()
+            x = (screen_size.width - window_size.width - 2 * f_size.width) // 2
+            y = (screen_size.height - window_size.height) // 2
+
+            # 设置窗口位置
+            self.pic_frame.SetPosition((x, y))
+            self.pic_frame.Bind(wx.EVT_CLOSE, self.on_pic_frame_close)
+            self.pic_frame.Show()
+
+    def on_pic_frame_close(self, event):
+        self.pic_frame = None
+        event.Skip()  # 确保默认的关闭行为仍然发生
+
 
 
 class ShowInfoV1(wx.Dialog):

@@ -13,6 +13,7 @@ utils/__pycache__/
 res/data/logs/*.txt
 res/data/logs/*.json
 res/data/data.json
+res/data/record.png
 .idea/
 build/
 develop-eggs/
