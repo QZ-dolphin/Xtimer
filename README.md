@@ -1,4 +1,8 @@
 # XTimer application release code
+
+## Main interface
+![1](.\\res\\pics\\main_interface.png)
+
 ## How to test:
 - Run main.py directly
 
