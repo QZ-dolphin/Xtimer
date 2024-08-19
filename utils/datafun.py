@@ -33,14 +33,13 @@ def show_info(filepath):
     """返回项目及时间"""
     projs_t = {}
     projs_t = FC.jsonload(filepath, projs_t)
-
+    # print(projs_t)
     s = "项目名称"
     info = f"{s.ljust(10)}\t已花费时间\n"
 
     Xlabel = []
     Yvalue = []
     k = 0
-
     for projs, pro_t in projs_t.items():
         t = T.time_s2(float(pro_t))
         info += f"· {projs.ljust(10)}\t{t}\n"
@@ -51,15 +50,17 @@ def show_info(filepath):
             Xlabel.append(projs)
             Yvalue.append(t1)
     # print(Xlabel)
-    combined = list(zip(Xlabel, Yvalue))
-    sorted_combined = sorted(combined, key=lambda x: x[1], reverse=True)
+    if Xlabel != []:
+        combined = list(zip(Xlabel, Yvalue))
+        sorted_combined = sorted(combined, key=lambda x: x[1], reverse=True)
 
-    # 解压排序后的结果回两个列表
-    Xlabel, Yvalue = zip(*sorted_combined)
+        # 解压排序后的结果回两个列表
+        Xlabel, Yvalue = zip(*sorted_combined)
 
-    # 将元组转换回列表
-    Xlabel = list(Xlabel)
-    Yvalue = list(Yvalue)
+        # 将元组转换回列表
+        Xlabel = list(Xlabel)
+        Yvalue = list(Yvalue)
+
     DW.draw_bar_chart(Xlabel, Yvalue)
     return info
 
@@ -140,3 +141,19 @@ def change_1(filepath, proj, edt):
 
 #######  以上改变记录代码
 ####################################################################################
+
+
+def readlog():
+    data, _ = T.da_hour()
+    log_path = os.path.join(Log_Path, f"{data}.txt")
+
+    try:
+        with open(log_path, 'r', encoding='utf-8') as file:
+            info = file.read()
+    except FileNotFoundError:
+        info = f"{data}\n"+"\t\t今日暂无记录"
+        with open(log_path, 'w', encoding='utf-8') as file:
+            file.write(f"{data}\n")
+    if info == f"{data}\n":
+        info = f"{data}\n" + "\t\t今日暂无记录"
+    return info

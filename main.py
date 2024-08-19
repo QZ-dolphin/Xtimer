@@ -9,6 +9,7 @@ from utils import cus_button as CB
 import utils.datafun as C
 from utils.fpath import *
 from utils.IDS import *
+from utils.show import ShowBlock
 
 
 class MainFrame(wx.Frame):
@@ -139,8 +140,7 @@ class MainFrame(wx.Frame):
         self.hish(dlg)
 
     def show_(self):
-        info = C.show_info(File_Path)
-        dlg = D.RecDialog2(info, "项目记录")
+        dlg = ShowBlock()
         self.hish(dlg)
     ######### 以上主界面功能按键代码
     ##########################################################################################################

@@ -297,8 +297,8 @@ class RecDialog(wx.Dialog):
 
 class RecDialog2(wx.Dialog):
     """显示项目记录界面"""
-    def __init__(self, info, name):
-        super().__init__(None, 2, name, size=(350, 500))
+    def __init__(self, info):
+        super().__init__(None, 2, "总项目记录", size=(350, 500))
         self.app = wx.GetApp()
         self.panel = self.app.frame
 
@@ -372,22 +372,31 @@ class RecDialog2(wx.Dialog):
 
 class RecDialog_v1(wx.Dialog):
     """统一格式显示项目记录界面"""
-    def __init__(self, info, name):
+    def __init__(self, num):
         super().__init__(None, 2, "项目记录", size=(350, 500))
         self.app = wx.GetApp()
         self.panel = self.app.frame
-
         # 图标
         button_icon(self, "饭团.png")
-
         self.Center()
+
+        if num == 3:
+            name = "总项目记录"
+            filepath = File_Path
+        elif num==2:
+            name = "当月项目记录"
+            filepath = T.month_filepath()
+        else:
+            name = "本周项目记录"
+            filepath = T.week_filepath()
+
+        info = C.show_info(filepath)
+
         sizer1 = wx.GridBagSizer(4, 4)
 
         st1 = wx.StaticText(self, label=name, size=(300, 20), style=wx.ALIGN_CENTER)
         sizer1.Add(st1, pos=(0, 0), span=(1, 3),
                    flag=wx.ALIGN_CENTER_HORIZONTAL | wx.LEFT | wx.RIGHT, border=25)
-
-
 
         tc = wx.TextCtrl(self, style=wx.TE_READONLY | wx.TE_MULTILINE | wx.VSCROLL)
         tc.SetValue(info)
@@ -397,6 +406,7 @@ class RecDialog_v1(wx.Dialog):
         sizer1.AddGrowableCol(1)
         sizer1.AddGrowableRow(1)
         buttonOk = wx.Button(self, wx.ID_OK)
+        buttonOk.Bind(wx.EVT_BUTTON, self.on_close)
         buttonPic = wx.Button(self, label="PIC")  # 新增的 PIC 按钮
         buttonPic.Bind(wx.EVT_BUTTON, self.on_pic_button)  # 绑定按钮事件处理函数
         box = wx.BoxSizer(wx.VERTICAL)
@@ -435,13 +445,19 @@ class RecDialog_v1(wx.Dialog):
             # 设置窗口位置
             self.pic_frame.SetPosition((x, y))
             self.pic_frame.Bind(wx.EVT_CLOSE, self.on_pic_frame_close)
+            self.pic_frame.Bind(wx.EVT_CLOSE, self.on_pic_frame_close)
             self.pic_frame.Show()
 
     def on_pic_frame_close(self, event):
         self.pic_frame = None
         event.Skip()  # 确保默认的关闭行为仍然发生
 
-
+    def on_close(self, event):
+        # 如果图片窗口打开，则关闭它
+        if self.pic_frame is not None:
+            self.pic_frame.Close()
+            self.pic_frame = None
+        event.Skip()  # 确保默认的关闭行为仍然发生
 
 class ShowInfoV1(wx.Dialog):
     """显示普通的提示信息，短文本"""
