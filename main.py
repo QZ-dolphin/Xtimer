@@ -203,6 +203,6 @@ class App(wx.App):
         return True
 
 
-FLAG = True
+FLAG = False
 app = App()
 app.MainLoop()

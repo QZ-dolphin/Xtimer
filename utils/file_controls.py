@@ -6,6 +6,9 @@ from utils.fpath import *
 
 def checkfile(filename):
     """检查文件是否存在，不存在则创建文件"""
+    path = os.path.dirname(filename)
+    if not os.path.exists(path):
+        os.makedirs(path)
     if not os.path.exists(filename):
         # 创建文件
         with open(filename, 'w') as file:
